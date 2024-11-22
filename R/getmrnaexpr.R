@@ -113,17 +113,65 @@ getmrnaexpr <- function(project) {
                    paste0("output_mRNA_lncRNA_expr/", project, "_gene_info.csv"),
                    quote = F,row.names = F)
 
+  se_rna <- data
   se_mrna <- data[rowdata$gene_type == "protein_coding", ]
   se_lnc <- data[rowdata$gene_type == "lncRNA", ]
+
+  expr_count_rna <- SummarizedExperiment::assay(se_rna, "unstranded")
+  expr_tpm_rna <- SummarizedExperiment::assay(se_rna, "tpm_unstrand")
+  expr_fpkm_rna <- SummarizedExperiment::assay(se_rna, "fpkm_unstrand")
   expr_count_mrna <- SummarizedExperiment::assay(se_mrna, "unstranded")
   expr_tpm_mrna <- SummarizedExperiment::assay(se_mrna, "tpm_unstrand")
   expr_fpkm_mrna <- SummarizedExperiment::assay(se_mrna, "fpkm_unstrand")
   expr_count_lnc <- SummarizedExperiment::assay(se_lnc, "unstranded")
   expr_tpm_lnc <- SummarizedExperiment::assay(se_lnc, "tpm_unstrand")
   expr_fpkm_lnc <- SummarizedExperiment::assay(se_lnc, "fpkm_unstrand")
+  symbol_rna <- SummarizedExperiment::rowData(se_rna)$gene_name
   symbol_mrna <- SummarizedExperiment::rowData(se_mrna)$gene_name
   symbol_lnc <- SummarizedExperiment::rowData(se_lnc)$gene_name
 
+    rna_expr_count <- cbind(data.frame(symbol_rna), as.data.frame(expr_count_rna))
+  rowm <- as.data.frame(rowMeans(rna_expr_count[, -1]))
+  names(rowm) <- "rmea"
+  tmp <- cbind(rowm, rna_expr_count)
+  tmp <- tmp[order(tmp$rmea,decreasing=T),]
+  tmp <- tmp[!duplicated(tmp$symbol_rna),]
+  rownames(tmp) <- tmp[,2]
+  rna_expr_count <- tmp[,c(-1,-2)]
+  save(rna_expr_count,
+       file = paste0("output_mRNA_lncRNA_expr/", project, "_rna_expr_count.rdata"))
+  utils::write.csv(rna_expr_count,
+                   paste0("output_mRNA_lncRNA_expr/", project, "_rna_expr_count.csv"),
+                   quote = F)
+
+  rna_expr_tpm <- cbind(data.frame(symbol_rna), as.data.frame(expr_tpm_rna))
+  rowm <- as.data.frame(rowMeans(rna_expr_tpm[, -1]))
+  names(rowm) <- "rmea"
+  tmp <- cbind(rowm, rna_expr_tpm)
+  tmp <- tmp[order(tmp$rmea,decreasing=T),]
+  tmp <- tmp[!duplicated(tmp$symbol_rna),]
+  rownames(tmp) <- tmp[,2]
+  rna_expr_tpm <- tmp[,c(-1,-2)]
+  save(rna_expr_tpm,
+       file = paste0("output_mRNA_lncRNA_expr/", project, "_rna_expr_tpm.rdata"))
+  utils::write.csv(rna_expr_tpm,
+                   paste0("output_mRNA_lncRNA_expr/", project, "_rna_expr_tpm.csv"),
+                   quote = F)
+
+  rna_expr_fpkm <- cbind(data.frame(symbol_rna), as.data.frame(expr_fpkm_rna))
+  rowm <- as.data.frame(rowMeans(rna_expr_fpkm[, -1]))
+  names(rowm) <- "rmea"
+  tmp <- cbind(rowm, rna_expr_fpkm)
+  tmp <- tmp[order(tmp$rmea,decreasing=T),]
+  tmp <- tmp[!duplicated(tmp$symbol_rna),]
+  rownames(tmp) <- tmp[,2]
+  rna_expr_fpkm <- tmp[,c(-1,-2)]
+  save(rna_expr_fpkm,
+       file = paste0("output_mRNA_lncRNA_expr/", project, "_rna_expr_fpkm.rdata"))
+  utils::write.csv(rna_expr_fpkm,
+                   paste0("output_mRNA_lncRNA_expr/", project, "_rna_expr_fpkm.csv"),
+                   quote = F)
+  
   mrna_expr_count <- cbind(data.frame(symbol_mrna), as.data.frame(expr_count_mrna))
   rowm <- as.data.frame(rowMeans(mrna_expr_count[, -1]))
   names(rowm) <- "rmea"
